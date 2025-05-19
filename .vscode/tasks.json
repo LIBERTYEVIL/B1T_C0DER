@@ -7,7 +7,8 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "${fileDirname}\\main.c",
+                "${file}",
+                "${fileDirname}\\file_oprt_funcs.c",
                 "${fileDirname}\\base64.c",
                 "${fileDirname}\\public_funcs.c",
                 "-o",

@@ -35,10 +35,10 @@ typedef struct oprt
 } oprt_info;
 
 /* Static Values */
-static const char *cmd_enc[] ={"encode", "e", "en", "enc"};
-static const char *cmd_dec[] ={"decode", "d", "de", "dec"};
-static const char *cmd_fdh[] ={"find_hidden", "fh", "fd", "fdh"};
-static const char *arg_list[] ={"-t", "-c", "-i", "-if", "-o", "-dbg"};
+static const char *cmd_enc[]  = {"encode", "e", "en", "enc"};
+static const char *cmd_dec[]  = {"decode", "d", "de", "dec"};
+static const char *cmd_fdh[]  = {"find_hidden", "fh", "fd", "fdh"};
+static const char *arg_list[] = {"-t", "-c", "-i", "-if", "-o", "-dbg"};
 
 /* Macros */
 #define C_EN_LEN 4
@@ -47,11 +47,16 @@ static const char *arg_list[] ={"-t", "-c", "-i", "-if", "-o", "-dbg"};
 #define ARGL_LEN 6
 
 /* Functions */
-void print_LOGO();
+void print_LOGO ();
 void print_usage();
 oprt_info *initialize_infos_struct (oprt_info * infos);
-void print_infos(oprt_info * infos);
-
+void print_infos (oprt_info * infos);
+void execute_findhd_inline (oprt_info* infos);
+void execute_output_inputinlinemode (oprt_info* infos, char* output);
+void execute_outputline_fmode_input (oprt_info* infos, char* outputline_fm, size_t linum);
+void execute_output_findhd_merged_str (oprt_info* infos, char* merged_str, int len);
+void execute_findhd_b64_infile (oprt_info* infos, int i, hd_b64_bits* hd_arr, char* str);
+void execute_oprt (oprt_info* infos);
 
 /* Logo */
 static const char *(LOGOSTR []) = {

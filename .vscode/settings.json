@@ -11,6 +11,13 @@
         "stdio.h": "c",
         "base64.h": "c",
         "random": "c",
-        "public_funcs.h": "c"
+        "public_funcs.h": "c",
+        "algorithm": "c",
+        "format": "c",
+        "file_oprt_funcs.h": "c",
+        "cstdlib": "c",
+        "memory_resource": "c",
+        "memory": "c",
+        "main.h": "c"
     }
 }

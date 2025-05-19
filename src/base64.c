@@ -6,10 +6,11 @@
 
 #include "base64.h"
 #include <stdlib.h>
+#include <stdio.h>////////////////////
 #include <string.h>
 #include <stddef.h> // for using size_t
 
-char *base64_encode(const char *input)
+char *base64_encode (const char *input)
 {
     size_t input_len  = strlen(input);
     size_t strLp = input_len;           // == strlen(pointer)
@@ -88,7 +89,7 @@ char *base64_encode(const char *input)
     return output;
 }
 
-char *base64_decode(const char *input) 
+char *base64_decode (const char *input) 
 {
     /* The 8Bits ASCII code in BASE64TABLE to 0-63 BASE64 decoded integer (only use low 6bits). */
     const char *pointer = input;           // Movable pointer for reading chars in the input.
@@ -103,14 +104,14 @@ char *base64_decode(const char *input)
     size_t output_len = ( input[input_len-2]=='=' ? input_len/4 - 2 : (input[input_len-1]=='=' ? input_len/4 - 1 : input_len/4 ));
     
     char *output = malloc(output_len); // 为输出结果分配内存
-    if (output == NULL) return NULL;    // 分配失败返回空指针
+    if (output == NULL) {return NULL;}    // 分配失败返回空指针
 
     /* BASE64 encoded string must be multiple of 4 */
     while (inputLp > 0)
     {
         char b64ch_char4gp[4] = {0};    // The BASE64 code read from the input.
 
-        /* 1. There must be another 4 chars. */
+        /* 1. There must be 4 chars per group. */
         if (inputLp > 4)
         {
             char decdd_char3gp[3] = {0};    // The characters decoded from BASE64 code.
@@ -140,14 +141,7 @@ char *base64_decode(const char *input)
         {
             for(int i=0; i<4; i++) 
             {
-                if ((DECODE_BYTES_6Bits[*(pointer + i)] == -1) && (*(pointer + i) != '='))
-                {
-                    return NULL;    
-                }
-                else
-                {
-                    b64ch_char4gp[i] = *(pointer + i); 
-                }
+                if ((DECODE_BYTES_6Bits[*(pointer + i)] == -1) && (*(pointer + i) != '=')) return NULL; else b64ch_char4gp[i] = *(pointer + i); 
             }
             inputLp -= 4;
             pointer += 4;
@@ -166,7 +160,17 @@ char *base64_decode(const char *input)
                 output[oinput++] = decdd_char2gp[0];
                 output[oinput++] = decdd_char2gp[1];
             }
-            else return NULL;
+            /* 3> 4 Chars are both not '=' */
+            else
+            {
+                char decdd_char3gp[3] = {0};
+                decdd_char3gp[0] = ((DECODE_BYTES_6Bits[b64ch_char4gp[0]] & 0x3f) << 2) + ((DECODE_BYTES_6Bits[b64ch_char4gp[1]] & 0x30) >> 4);
+                decdd_char3gp[1] = ((DECODE_BYTES_6Bits[b64ch_char4gp[1]] & 0x0f) << 4) + ((DECODE_BYTES_6Bits[b64ch_char4gp[2]] & 0x3c) >> 2);
+                decdd_char3gp[2] = ((DECODE_BYTES_6Bits[b64ch_char4gp[2]] & 0x03) << 6) + ( DECODE_BYTES_6Bits[b64ch_char4gp[3]] & 0x3f);
+                output[oinput++] = decdd_char3gp[0];
+                output[oinput++] = decdd_char3gp[1];
+                output[oinput++] = decdd_char3gp[2];
+            }
         }
         else return NULL;
     }
@@ -174,7 +178,7 @@ char *base64_decode(const char *input)
     return output;
 }
 
-char is_str_base64(const char *input) 
+char is_str_base64 (const char *input) 
 {
     const char *pointer = input;
     int DECODE_BYTES_6Bits[256] = {-1};
@@ -196,7 +200,7 @@ char is_str_base64(const char *input)
     return 1;
 }
 
-char howMany_b64str_hidenBits(const char *b64str)
+char howMany_b64str_hidenBits (const char *b64str)
 {
     if(is_str_base64(b64str) == 0) return -1;
     const char *pointer = b64str + strlen(b64str);
@@ -214,7 +218,7 @@ char howMany_b64str_hidenBits(const char *b64str)
     }
 }
 
-char findout_base64_hidenBits(const char *b64str, char bits_num_2or4)
+char findout_base64_hidenBits (const char *b64str, char bits_num_2or4)
 {
     if(is_str_base64(b64str) == 0) return -1;
     const char *pointer = b64str + strlen(b64str);
@@ -230,4 +234,105 @@ char findout_base64_hidenBits(const char *b64str, char bits_num_2or4)
     {
         return -1;
     }
+}
+
+char* merge_bits_to_str (hd_b64_bits* hd_arr, size_t num, int* ret_str_len)
+{
+    size_t total_bit_num  = 0;  // 从hd_arr拿到的需要还原的数据的总位数
+    size_t total_char_num = 0;  // 需要还原的数据还原出来总共有多少字节
+    size_t remain_bit_num = 0;  // 万一隐藏的信息有未凑成完整字节的情况
+    int temp_bit_num      = 0;  // 临时变量，到达8时将八位数据拼成1字节
+    
+    size_t now_char_index = 0;
+    char a_char     = 0;    // 存储拼凑完成的一个字节
+    char temp2bits  = 0;    // 如果一个四位的数据被截成两半存在不同字节中，临时存储其中一半
+
+    /* 创建用于存放最终结果的内存空间 */
+    for (size_t n = 0; n < num; n++) total_bit_num += hd_arr[n].num;
+    total_char_num = total_bit_num / 8;
+    remain_bit_num = total_bit_num % 8;
+    if (remain_bit_num > 0) total_char_num ++;
+    char* ret_str = malloc(sizeof(char) * total_char_num);
+    if (ret_str == NULL) { printf("ERROR: 内存分配失败\n"); return NULL; }
+
+    /* 遍历每一个数据，从它是2位，还是4位判断拼凑一个字节还需多少位，依次处理 */
+    for (size_t i=0; i<num; i++)
+    {
+        if (hd_arr[i].num == 0)
+        {
+            continue;
+        }
+        else if(temp2bits != 0)
+        {
+            a_char = (temp2bits & 0x03) << 6;
+            temp_bit_num = 2;
+            temp2bits = 0;
+        }
+        else
+        {
+            switch (temp_bit_num)
+            {
+                case 0:
+                    if(hd_arr[i].num == 2)
+                    {
+                        a_char = (hd_arr[i].bits & 0x03) << 6;
+                        temp_bit_num = 2;
+                    }
+                    else if(hd_arr[i].num == 4)
+                    {
+                        a_char = (hd_arr[i].bits & 0x0f) << 4;
+                        temp_bit_num = 4;
+                    }
+                    break;
+                case 2:
+                    if(hd_arr[i].num == 2)
+                    {
+                        a_char += (hd_arr[i].bits & 0x03) << 4;
+                        temp_bit_num = 4;
+                    }
+                    else if(hd_arr[i].num == 4)
+                    {
+                        a_char += (hd_arr[i].bits & 0x0f) << 2;
+                        temp_bit_num = 6;
+                    }
+                    break;
+                case 4:
+                    if(hd_arr[i].num == 2)
+                    {
+                        a_char += (hd_arr[i].bits & 0x03) << 2;
+                        temp_bit_num = 6;
+                    }
+                    else if(hd_arr[i].num == 4)
+                    {
+                        a_char += hd_arr[i].bits & 0x0f;
+                        ret_str[now_char_index++] = a_char;
+                        a_char = 0;
+                        temp_bit_num = 0;
+                    }
+                    break;
+                case 6:
+                    if(hd_arr[i].num == 2)
+                    {
+                        a_char += hd_arr[i].bits & 0x03;
+                        ret_str[now_char_index++] = a_char;
+                        a_char = 0;
+                        temp_bit_num = 0;
+                    }
+                    else if(hd_arr[i].num == 4)
+                    {
+                        temp2bits = hd_arr[i].bits & 0x03;  // 0011
+                        a_char   += hd_arr[i].bits & 0x0c;  // 1100
+                        ret_str[now_char_index++] = a_char;
+                        a_char = 0;
+                        temp_bit_num = 0;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+    ret_str[now_char_index++] = '\0';
+    /* 循环结束后得到结果，总计now_char_index-1个有效字符 */
+    return ret_str;
 }
