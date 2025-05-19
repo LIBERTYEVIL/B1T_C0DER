@@ -6,7 +6,6 @@
 
 #include "base64.h"
 #include <stdlib.h>
-#include <stdio.h>////////////////////
 #include <string.h>
 #include <stddef.h> // for using size_t
 
@@ -92,24 +91,24 @@ char *base64_encode (const char *input)
 char *base64_decode (const char *input) 
 {
     /* The 8Bits ASCII code in BASE64TABLE to 0-63 BASE64 decoded integer (only use low 6bits). */
-    const char *pointer = input;           // Movable pointer for reading chars in the input.
+    const char *pointer = input;            // Movable pointer for reading chars in the input.
                                             // 256个元素为了使BASE64T[]中的ASCII字符都能作为解码表的索引，
-    int DECODE_BYTES_6Bits[256] = {-1};      // 使用int类型以便在解码表中存储额外的信息，如输入非BASE64字符作为索引返回的值
+    int DECODE_BYTES_6Bits[256] = {-1};     // 使用int类型以便在解码表中存储额外的信息，如输入非BASE64字符作为索引返回的值
                                             // 64 == 0100 0000 B == 0x40
     for (int i = 0; i < 64; i++) { DECODE_BYTES_6Bits[(unsigned char)BASE64T[i]] = i; }
 
     size_t input_len  = strlen(input);
-    size_t inputLp = input_len;       // == strlen(pointer)
+    size_t inputLp = input_len;             // == strlen(pointer)
     size_t oinput = 0;
     size_t output_len = ( input[input_len-2]=='=' ? input_len/4 - 2 : (input[input_len-1]=='=' ? input_len/4 - 1 : input_len/4 ));
     
-    char *output = malloc(output_len); // 为输出结果分配内存
-    if (output == NULL) {return NULL;}    // 分配失败返回空指针
+    char *output = malloc(output_len);      // 为输出结果分配内存
+    if (output == NULL) {return NULL;}      // 分配失败返回空指针
 
     /* BASE64 encoded string must be multiple of 4 */
     while (inputLp > 0)
     {
-        char b64ch_char4gp[4] = {0};    // The BASE64 code read from the input.
+        char b64ch_char4gp[4] = {0};        // The BASE64 code read from the input.
 
         /* 1. There must be 4 chars per group. */
         if (inputLp > 4)
