@@ -252,7 +252,7 @@ char* merge_bits_to_str (hd_b64_bits* hd_arr, size_t num, int* ret_str_len)
     remain_bit_num = total_bit_num % 8;
     if (remain_bit_num > 0) total_char_num ++;
     char* ret_str = malloc(sizeof(char) * total_char_num);
-    if (ret_str == NULL) { printf("ERROR: 内存分配失败\n"); return NULL; }
+    if (ret_str == NULL) { return NULL; }
 
     /* 遍历每一个数据，从它是2位，还是4位判断拼凑一个字节还需多少位，依次处理 */
     for (size_t i=0; i<num; i++)

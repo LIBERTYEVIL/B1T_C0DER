@@ -323,7 +323,10 @@ void execute_oprt (oprt_info* infos)
             }
 
             free(linfo.buf_add);
+            linfo.buf_add = NULL;
             execute_outputline_fmode_input(infos, outputline_fmode, i+1);
+            free(outputline_fmode);
+            outputline_fmode = NULL;
         }
 
         /* 遍历完成后执行操作 */
